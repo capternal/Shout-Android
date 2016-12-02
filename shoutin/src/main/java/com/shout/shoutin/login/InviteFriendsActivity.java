@@ -43,6 +43,7 @@ import com.facebook.HttpMethod;
 import com.facebook.appevents.AppEventsLogger;
 import com.shout.shoutin.CustomClasses.CustomSnackBarLayout;
 import com.shout.shoutin.R;
+import com.shout.shoutin.Utils.CallWebService;
 import com.shout.shoutin.Utils.ConnectivityBroadcastReceiver;
 import com.shout.shoutin.Utils.Constants;
 import com.shout.shoutin.Utils.KeyboardUtils;
@@ -56,13 +57,14 @@ import com.shout.shoutin.main.Model.Continent;
 import com.shout.shoutin.main.ShoutDefaultActivity;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
-public class InviteFriendsActivity extends MPermission implements View.OnClickListener, SearchView.OnQueryTextListener, SearchView.OnCloseListener, SwipeRefreshLayout.OnRefreshListener, ConnectivityBroadcastReceiver.ConnectivityReceiverListener {
+public class InviteFriendsActivity extends MPermission implements View.OnClickListener, SearchView.OnQueryTextListener, SearchView.OnCloseListener, SwipeRefreshLayout.OnRefreshListener, ConnectivityBroadcastReceiver.ConnectivityReceiverListener, CallWebService.WebserviceResponse {
 
     //    SpotsDialog progressDialog;
     private ProgressBar progressBar;
@@ -98,6 +100,7 @@ public class InviteFriendsActivity extends MPermission implements View.OnClickLi
     private int MAX_ROWS = 20;
     private View heroImageView;
     View listHeader;
+    private String strNoFriendsDataUrl = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -132,58 +135,7 @@ public class InviteFriendsActivity extends MPermission implements View.OnClickLi
         // CALLES CONNETIVITY CHECK LISTENER
         new AppController().setConnectivityListener(this);
 
-        init();
-
-
-        try {
-            objDatabaseHelper.deleteTable(DatabaseHelper.strTableNameShout);
-        } catch (NullPointerException ne) {
-            ne.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        Toast.makeText(this, "Contacts syncing", Toast.LENGTH_SHORT).show();
-        getFacebookFriends();
-
-        arrStrContactName = new ArrayList<String>();
-        arrStrContactNumber = new ArrayList<String>();
-        im = (InputMethodManager) getSystemService(Service.INPUT_METHOD_SERVICE);
-        RelativeLayout objRelativeLayoutRoot = (RelativeLayout) findViewById(R.id.relative_root_invite_friends);
-
-        KeyboardUtils.addKeyboardToggleListener(this, new KeyboardUtils.SoftKeyboardToggleListener() {
-            @Override
-            public void onToggleSoftKeyboard(boolean isVisible) {
-                Log.d("keyboard", "keyboard visible: " + isVisible);
-                if (isVisible) {
-//                    objSwipeRefreshLayout.setEnabled(false);
-                    btnGiveThemShout.setVisibility(Button.GONE);
-                    /*objLinearTopView.setVisibility(LinearLayout.GONE);
-                    listHeader.setVisibility(View.GONE);
-                    expListView.smoothScrollToPosition(120);*/
-
-                    /*listHeader.setVisibility(View.GONE);
-                    expListView.smoothScrollToPosition(10);
-                    stickyView.setY(0);
-                    expListView.setEnabled(false);*/
-                } else {
-                    //objLinearTopView.setVisibility(LinearLayout.VISIBLE);
-                    /*openCloseSearchBar(false, ShoutDefaultActivity.this);
-                    objEditTextSearch.setText("");
-                    listHeader.setVisibility(View.VISIBLE);*/
-//                    objSwipeRefreshLayout.setEnabled(true);
-                    btnGiveThemShout.setVisibility(Button.VISIBLE);
-
-                    /*listHeader.setVisibility(View.VISIBLE);
-                    View header = expListView.getChildAt(0);
-                    View layout = header.findViewById(R.id.linear_invite_contact_screen_top_view);
-                    System.out.println("LAYOUT BOTTOM : " + layout.getBottom());
-                    stickyView.setY(layout.getBottom());
-                    expListView.smoothScrollToPosition(0);
-                    expListView.setEnabled(true);*/
-                }
-            }
-        });
+        new CallWebService(Constants.MESSAGE_SETTINGS_API, new JSONObject(), this, this, false).execute();
     }
 
     private void showInternetView(boolean isConnected) {
@@ -212,7 +164,7 @@ public class InviteFriendsActivity extends MPermission implements View.OnClickLi
             /*Continent continentFriends = new Continent("DISPLAYING YOUR CONTACTS ON SHOUTIN ", arrayListFriendList);
             continentList.add(continentFriends);*/
             if (arrayListFriendList.size() == 0) {
-                arrayListFriendList.add(new ContactModel(0, "image", "http://vignette4.wikia.nocookie.net/disney/images/4/4c/Cinderella_Diamond_Edition_Banner_3.jpg", "", "", "", false, "", 0, "", ""));
+                arrayListFriendList.add(new ContactModel(0, "image", strNoFriendsDataUrl, "", "", "", false, "", 0, "", ""));
                 Continent continentFriends = new Continent("DISPLAYING YOUR CONTACTS ON SHOUTIN ", arrayListFriendList);
                 continentList.add(continentFriends);
             } else {
@@ -522,7 +474,7 @@ public class InviteFriendsActivity extends MPermission implements View.OnClickLi
                         Intent smsIntent = new Intent(Intent.ACTION_VIEW);
                         smsIntent.setType("vnd.android-dir/mms-sms");
                         smsIntent.putExtra("address", toNumbers);
-                        smsIntent.putExtra("sms_body", "Checkout shout application for your smartphone. Download it today from. http://shout.com");
+                        smsIntent.putExtra("sms_body", "Checkout shout application for your smartphone. Download it today from. \n https://play.google.com/store/apps/details?id=com.shout.shoutapplication&hl=en");
                         smsIntent.putExtra(android.content.Intent.EXTRA_PHONE_NUMBER, toNumbers);
                         startActivity(smsIntent);
                     } else {
@@ -566,6 +518,81 @@ public class InviteFriendsActivity extends MPermission implements View.OnClickLi
     @Override
     public void onNetworkConnectionChanged(boolean isConnected) {
         showInternetView(isConnected);
+    }
+
+    @Override
+    public void onWebserviceResponce(String strUrl, String strResult) {
+        if (Constants.MESSAGE_SETTINGS_API.equals(strUrl)) {
+
+            JSONObject objJsonObject = null;
+            try {
+                objJsonObject = new JSONObject(strResult);
+                if (objJsonObject.getBoolean("result")) {
+                    JSONObject objFirst = new JSONObject(objJsonObject.getString("response"));
+                    JSONObject objSecond = new JSONObject(objFirst.getString("settings"));
+                    System.out.println("VALUE URL : " + Constants.HTTP_URL + objSecond.getString("SHOUTBOOK_BLANK_IMAGE"));
+
+                    strNoFriendsDataUrl = Constants.HTTP_URL + objSecond.getString("SHOUTBOOK_BLANK_IMAGE");
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            init();
+
+
+            try {
+                objDatabaseHelper.deleteTable(DatabaseHelper.strTableNameShout);
+            } catch (NullPointerException ne) {
+                ne.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            Toast.makeText(this, "Contacts syncing", Toast.LENGTH_SHORT).show();
+            getFacebookFriends();
+
+            arrStrContactName = new ArrayList<String>();
+            arrStrContactNumber = new ArrayList<String>();
+            im = (InputMethodManager) getSystemService(Service.INPUT_METHOD_SERVICE);
+            RelativeLayout objRelativeLayoutRoot = (RelativeLayout) findViewById(R.id.relative_root_invite_friends);
+
+            KeyboardUtils.addKeyboardToggleListener(this, new KeyboardUtils.SoftKeyboardToggleListener() {
+                @Override
+                public void onToggleSoftKeyboard(boolean isVisible) {
+                    Log.d("keyboard", "keyboard visible: " + isVisible);
+                    if (isVisible) {
+//                    objSwipeRefreshLayout.setEnabled(false);
+                        btnGiveThemShout.setVisibility(Button.GONE);
+                    /*objLinearTopView.setVisibility(LinearLayout.GONE);
+                    listHeader.setVisibility(View.GONE);
+                    expListView.smoothScrollToPosition(120);*/
+
+                    /*listHeader.setVisibility(View.GONE);
+                    expListView.smoothScrollToPosition(10);
+                    stickyView.setY(0);
+                    expListView.setEnabled(false);*/
+                    } else {
+                        //objLinearTopView.setVisibility(LinearLayout.VISIBLE);
+                    /*openCloseSearchBar(false, ShoutDefaultActivity.this);
+                    objEditTextSearch.setText("");
+                    listHeader.setVisibility(View.VISIBLE);*/
+//                    objSwipeRefreshLayout.setEnabled(true);
+                        btnGiveThemShout.setVisibility(Button.VISIBLE);
+
+                    /*listHeader.setVisibility(View.VISIBLE);
+                    View header = expListView.getChildAt(0);
+                    View layout = header.findViewById(R.id.linear_invite_contact_screen_top_view);
+                    System.out.println("LAYOUT BOTTOM : " + layout.getBottom());
+                    stickyView.setY(layout.getBottom());
+                    expListView.smoothScrollToPosition(0);
+                    expListView.setEnabled(true);*/
+                    }
+                }
+            });
+
+
+        }
     }
 
     public class LoadingDataForFirstTime extends AsyncTask<String, Void, String> {
@@ -744,7 +771,7 @@ public class InviteFriendsActivity extends MPermission implements View.OnClickLi
                         }
                     }*/
                     if (arrayListFriendList.size() == 0) {
-                        arrayListFriendList.add(new ContactModel(0, "image", "http://vignette4.wikia.nocookie.net/disney/images/4/4c/Cinderella_Diamond_Edition_Banner_3.jpg", "", "", "", false, "", 0, "", ""));
+                        arrayListFriendList.add(new ContactModel(0, "image", strNoFriendsDataUrl, "", "", "", false, "", 0, "", ""));
                         Continent continentFriends = new Continent("DISPLAYING YOUR CONTACTS ON SHOUTIN ", arrayListFriendList);
                         continentList.add(continentFriends);
                     } else {
@@ -932,7 +959,7 @@ public class InviteFriendsActivity extends MPermission implements View.OnClickLi
                     continentList.add(continentFriends);*/
 
                     if (arrayListFriendList.size() == 0) {
-                        arrayListFriendList.add(new ContactModel(0, "image", "http://vignette4.wikia.nocookie.net/disney/images/4/4c/Cinderella_Diamond_Edition_Banner_3.jpg", "", "", "", false, "", 0, "", ""));
+                        arrayListFriendList.add(new ContactModel(0, "image", strNoFriendsDataUrl, "", "", "", false, "", 0, "", ""));
                         Continent continentFriends = new Continent("DISPLAYING YOUR CONTACTS ON SHOUTIN ", arrayListFriendList);
                         continentList.add(continentFriends);
                     } else {
@@ -1186,7 +1213,7 @@ public class InviteFriendsActivity extends MPermission implements View.OnClickLi
                             }
                         }
                         if (arrayListFriendList.size() == 0) {
-                            arrayListFriendList.add(new ContactModel(0, "image", "http://vignette4.wikia.nocookie.net/disney/images/4/4c/Cinderella_Diamond_Edition_Banner_3.jpg", "", "", "", false, "", 0, "", ""));
+                            arrayListFriendList.add(new ContactModel(0, "image", strNoFriendsDataUrl, "", "", "", false, "", 0, "", ""));
                             Continent continentFriends = new Continent("DISPLAYING YOUR CONTACTS ON SHOUTIN ", arrayListFriendList);
                             continentList.add(continentFriends);
                         } else {
