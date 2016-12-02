@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="tooltip-0.1.6">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/shoutin/build/intermediates/exploded-aar/com.github.vihtarb/tooltip/0.1.6/res" />
+      <root url="jar://$PROJECT_DIR$/shoutin/build/intermediates/exploded-aar/com.github.vihtarb/tooltip/0.1.6/jars/classes.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.github.vihtarb/tooltip/0.1.6/8f5e93f71014b49741f5fcd0f61f62c6a1903c9f/tooltip-0.1.6-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal">
+
+    <TextView
+        android:layout_width="190dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/rounded_corner_notional_black"
+        android:padding="5dp"
+        android:text="Notional Value of the product is what is expected by the borrower to pay to the owner in case of damage or loss of product."
+        android:textColor="#FFFFFF"
+        android:textSize="9sp" />
+
+</LinearLayout>

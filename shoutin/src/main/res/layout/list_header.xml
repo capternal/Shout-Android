@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <!--<View
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:background="@android:color/transparent" />-->
+
+    <!--Add Friends to your shout Book Layout-->
+    <LinearLayout
+        android:id="@+id/linear_invite_contact_screen_top_view"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:layout_alignParentTop="true"
+        android:background="#FCFCFC"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:visibility="visible">
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_centerVertical="true"
+                android:layout_marginBottom="3dp"
+                android:layout_toLeftOf="@+id/btn_skip_invite_friends"
+                android:indeterminateDrawable="@drawable/progress"
+                android:visibility="gone" />
+
+            <Button
+                android:id="@+id/btn_skip_invite_friends"
+                android:layout_width="60dp"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_gravity="right"
+                android:layout_marginRight="5dp"
+                android:background="@android:color/transparent"
+                android:gravity="right|center_vertical"
+                android:text="REFRESH"
+                android:textColor="#7D7D7D"
+                android:textSize="12sp" />
+
+        </RelativeLayout>
+
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:gravity="center_horizontal"
+            android:text="ADD FRIENDS TO YOUR SHOUT BOOK"
+            android:textColor="#185376"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="7dp"
+            android:gravity="center_horizontal"
+            android:text="The more  the merrier we say."
+            android:textColor="#313131" />
+
+    </LinearLayout>
+
+
+    <Space
+        android:id="@+id/stickyViewPlaceholder"
+        android:layout_width="match_parent"
+        android:layout_height="65dp" />
+
+</LinearLayout>

@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "290109192077",
+    "firebase_url": "https://shoutin-151212.firebaseio.com",
+    "project_id": "shoutin-151212",
+    "storage_bucket": "shoutin-151212.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:290109192077:android:46ed734d6b8d1a82",
+        "android_client_info": {
+          "package_name": "com.shout.shoutin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "290109192077-d7j9csp2np09g23uc5uev0bfa4bbuge2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.shout.shoutin",
+            "certificate_hash": "53E0FF313A8F6009D667CFA3252B6C652F4D5923"
+          }
+        },
+        {
+          "client_id": "290109192077-0mm0g1hbqjka5uvvapm7tpup6ao6tlqq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCDTPKg1y-wP8ISvkc3r4OgKKS0ZMQlrCY"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "290109192077-0mm0g1hbqjka5uvvapm7tpup6ao6tlqq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

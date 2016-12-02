@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_shout_search"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.shout.shoutin.main.ShoutSearchActivity">
+
+    <RelativeLayout
+        android:id="@+id/relative_search_box"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_margin="10dp"
+        android:visibility="gone">
+
+        <EditText
+            android:id="@+id/edt_search_text"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/rounded_corner_search_background"
+            android:hint="Search"
+            android:paddingLeft="40dp"
+            android:textSize="14sp" />
+
+
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="10dp"
+            android:src="@drawable/search" />
+
+    </RelativeLayout>
+
+
+    <ExpandableListView
+        android:id="@+id/listview_searched_data"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/relative_grey_background_menu_search_screen"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:childDivider="@android:color/transparent"
+        android:clipToPadding="false"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="0dp"
+        android:fadingEdge="none"
+        android:fadingEdgeLength="0dp"
+        android:scrollbarStyle="outsideOverlay"
+        android:scrollbars="none">
+
+    </ExpandableListView>
+
+    <RelativeLayout
+        android:id="@+id/relative_grey_background_menu_search_screen"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:background="@color/transparent"
+        android:visibility="visible">
+
+        <RelativeLayout
+            android:id="@+id/relative_search_area_search_screen"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="#F2F2F2">
+
+            <ImageView
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="10dp"
+                android:background="@drawable/search"
+                android:visibility="visible" />
+
+            <Button
+                android:id="@+id/btn_shout_default_search_screen"
+                android:layout_width="50dp"
+                android:layout_height="match_parent"
+                android:layout_centerVertical="true"
+                android:background="@android:color/transparent"
+                android:visibility="visible" />
+
+            <RelativeLayout
+                android:id="@+id/relative_search_box_shout_default_header"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_toRightOf="@+id/btn_shout_default_search_screen"
+                android:visibility="visible">
+
+                <EditText
+                    android:id="@+id/edt_search_screen"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_toLeftOf="@+id/image_search_screen_cancel"
+                    android:background="#F2F2F2"
+                    android:fontFamily="sans-serif-light"
+                    android:hint="Search"
+                    android:imeOptions="actionDone"
+                    android:inputType="text"
+                    android:paddingLeft="7dp"
+                    android:singleLine="true"
+                    android:textColor="#333333"
+                    android:textColorHint="#333333"
+                    android:textSize="14sp" />
+
+                <ImageView
+                    android:id="@+id/image_search_screen_cancel"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:padding="12dp"
+                    android:src="@drawable/search_box_cross" />
+
+
+            </RelativeLayout>
+
+
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+    <com.shout.shoutin.CustomClasses.CustomSnackBarLayout
+        android:id="@+id/relative_internet_check"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_alignParentBottom="true"
+        android:visibility="gone"></com.shout.shoutin.CustomClasses.CustomSnackBarLayout>
+
+</RelativeLayout>
