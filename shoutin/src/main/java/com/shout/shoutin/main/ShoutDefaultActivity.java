@@ -582,33 +582,36 @@ public class ShoutDefaultActivity extends BaseActivity implements View.OnClickLi
             @Override
             public void onPageSelected(final int position) {
 
-                showNoDataFoundUI(false);
 
-                // SET API SCROLL COUNT TO 0 (ZERO)
-                setAPIScrollCount(0);
-
-                // SET IS LOADING TO TRUE FOR GETTING LAST ITEM DETECT
-                isLoading = true;
-                // USED FOR DISPLAYING DEFAULT API LOADER ON CENTER OF SCREEN. LOADER IS VISIBLE WHEN IT IS TRUE.
-                isFirstTime = true;
-                // SET MAP ADDRESS LAYOUT CLOSE/OPEN VALUE
-                isMapAddressVisible = false;
-                openMapAddressLayout(false);
                 Handler objHandler = new Handler();
                 objHandler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         try {
+
+                            showNoDataFoundUI(false);
+
+                            // SET API SCROLL COUNT TO 0 (ZERO)
+                            setAPIScrollCount(0);
+
+                            // SET IS LOADING TO TRUE FOR GETTING LAST ITEM DETECT
+                            isLoading = true;
+                            // USED FOR DISPLAYING DEFAULT API LOADER ON CENTER OF SCREEN. LOADER IS VISIBLE WHEN IT IS TRUE.
+                            isFirstTime = true;
+                            // SET MAP ADDRESS LAYOUT CLOSE/OPEN VALUE
+                            isMapAddressVisible = false;
+                            openMapAddressLayout(false);
+
                             MyPreferencesModel objMyPreferencesModel = arrMyPreferencesModel.get(position);
                             strPreferenceId = objMyPreferencesModel.getPreference_id();
                             objSharedPreferences.edit().putString(Constants.SHOUT_CATEGORY_PREFERENCE_ID, strPreferenceId).commit();
-                            System.out.println("SELECTED PREFERENCE ID : " + strPreferenceId);
                             arrShoutDefaultListModel.clear();
-//                        objShoutDefaultListAdapter.notifyDataSetChanged();
                             objListViewShoutList.setAdapter(null);
                             objDatabaseHelper.deleteTable(DatabaseHelper.strTableNameShout);
                             intOffset = 0;
+                            System.out.println("API SELECTED PREFERENCE ID : " + strPreferenceId);
                             if (strPreferenceId.equals("4")) {
+
                                 objLoadNearByShouts = new LoadNearByShouts();
                                 objLoadNearByShouts.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                             } else {
@@ -640,16 +643,7 @@ public class ShoutDefaultActivity extends BaseActivity implements View.OnClickLi
                             }*/
                         } catch (NullPointerException ne) {
                             ne.printStackTrace();
-                            /*intOffset = 0;
-                            if (strPreferenceId.equals("1")) {
-                                objLoadNearByShouts = new LoadNearByShouts();
-                                objLoadNearByShouts.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                            } else if (strPreferenceId.equals("2")) {
 
-                            } else if (strPreferenceId.equals("0")) {
-                                objStoreShoutDataForFirstTime = new StoreShoutDataForFirstTime("0");
-                                objStoreShoutDataForFirstTime.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                            }*/
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -1149,8 +1143,6 @@ public class ShoutDefaultActivity extends BaseActivity implements View.OnClickLi
                                                                }
                                                            }
         );
-
-
     }
 
     private void setSearchedValue(String strSentence, String strCategoryId) {
@@ -1991,31 +1983,26 @@ public class ShoutDefaultActivity extends BaseActivity implements View.OnClickLi
                     // IT IS USED FOR CALLING LoadMoreAPI for once.
 
                     if (new JSONArray(jSONObject.getString("shout")).length() > 0) {
-                        ShoutDefaultActivity.this.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    arrShoutDefaultListModel.addAll(objDatabaseHelper.saveShout(new JSONArray(jSONObject.getString("shout")), "0"));
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-                                System.out.println("SHOUT LOCAL DATA ARRAY COUNT : " + arrShoutDefaultListModel.size());
+                        try {
+                            arrShoutDefaultListModel.addAll(objDatabaseHelper.saveShout(new JSONArray(jSONObject.getString("shout")), "0"));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        System.out.println("SHOUT LOCAL DATA ARRAY COUNT : " + arrShoutDefaultListModel.size());
 
-                                state = objListViewShoutList.onSaveInstanceState();
-                                arrShoutDefaultListModel.clear();
+                        state = objListViewShoutList.onSaveInstanceState();
+                        arrShoutDefaultListModel.clear();
 
-                                if (objSharedPreferences.getString(Constants.USER_SEARCHED_CATEGORY, "").length() > 0) {
-                                    arrShoutDefaultListModel = objDatabaseHelper.getShoutDefaultListModelArray("0", strPreferenceId, true);
-                                } else {
-                                    arrShoutDefaultListModel = objDatabaseHelper.getShoutDefaultListModelArray("0", strPreferenceId, false);
-                                }
-                                objListViewShoutList.setAdapter(new ShoutDefaultListAdapter(arrShoutDefaultListModel, ShoutDefaultActivity.this, ShoutDefaultActivity.this));
-                                if (state != null) {
-                                    objListViewShoutList.onRestoreInstanceState(state);
-                                }
-                                objShoutDefaultListAdapter.notifyDataSetChanged();
-                            }
-                        });
+                        if (objSharedPreferences.getString(Constants.USER_SEARCHED_CATEGORY, "").length() > 0) {
+                            arrShoutDefaultListModel = objDatabaseHelper.getShoutDefaultListModelArray("0", strPreferenceId, true);
+                        } else {
+                            arrShoutDefaultListModel = objDatabaseHelper.getShoutDefaultListModelArray("0", strPreferenceId, false);
+                        }
+                        objListViewShoutList.setAdapter(new ShoutDefaultListAdapter(arrShoutDefaultListModel, ShoutDefaultActivity.this, ShoutDefaultActivity.this));
+                        if (state != null) {
+                            objListViewShoutList.onRestoreInstanceState(state);
+                        }
+                        objShoutDefaultListAdapter.notifyDataSetChanged();
                         isLoading = true;
                         showNoDataFoundUI(false);
 
@@ -2038,7 +2025,8 @@ public class ShoutDefaultActivity extends BaseActivity implements View.OnClickLi
                         // IF CATEGORY IS EMPTY THEN AND TEHN ONLY CALL NEARBYAPI ELSE DO NOTHING
                         System.out.println("CATEGORY FREZ ON LOAD MORE : " + objSharedPreferences.getString(Constants.USER_SEARCHED_CATEGORY, ""));
                         if (objSharedPreferences.getString(Constants.USER_SEARCHED_CATEGORY, "").isEmpty() || objSharedPreferences.getString(Constants.USER_SEARCHED_CATEGORY, "").equals("")) {
-                            if (!strPreferenceId.equals("2") && !strPreferenceId.equals("3")) {
+                            if (!strPreferenceId.equals("2")) {
+                                //&& !strPreferenceId.equals("3")
                                 new LoadNearByShouts().execute();
                             } else {
                                 showNoDataFoundUI(true);
@@ -2202,21 +2190,16 @@ public class ShoutDefaultActivity extends BaseActivity implements View.OnClickLi
                         System.out.println("TEST : " + key);
                         state = objListViewShoutList.onSaveInstanceState();
 
-                        ShoutDefaultActivity.this.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                objDatabaseHelper.saveShout(objJsonArray, "0");
-                                if (objSharedPreferences.getString(Constants.USER_SEARCHED_CATEGORY, "").length() > 0) {
-                                    arrShoutDefaultListModel = objDatabaseHelper.getShoutDefaultListModelArray("0", strPreferenceId, true);
-                                } else {
-                                    arrShoutDefaultListModel = objDatabaseHelper.getShoutDefaultListModelArray("0", strPreferenceId, false);
-                                }
-                                System.out.println("PRASANNA PRINT : MODEL ARRAY : " + arrShoutDefaultListModel.size());
-                                objShoutDefaultListAdapter = new ShoutDefaultListAdapter(arrShoutDefaultListModel, ShoutDefaultActivity.this, ShoutDefaultActivity.this);
-                                objListViewShoutList.setAdapter(objShoutDefaultListAdapter);
-                                objListViewShoutList.onRestoreInstanceState(state);
-                            }
-                        });
+                        objDatabaseHelper.saveShout(objJsonArray, "0");
+                        if (objSharedPreferences.getString(Constants.USER_SEARCHED_CATEGORY, "").length() > 0) {
+                            arrShoutDefaultListModel = objDatabaseHelper.getShoutDefaultListModelArray("0", strPreferenceId, true);
+                        } else {
+                            arrShoutDefaultListModel = objDatabaseHelper.getShoutDefaultListModelArray("0", strPreferenceId, false);
+                        }
+                        System.out.println("PRASANNA PRINT : MODEL ARRAY : " + arrShoutDefaultListModel.size());
+                        objShoutDefaultListAdapter = new ShoutDefaultListAdapter(arrShoutDefaultListModel, ShoutDefaultActivity.this, ShoutDefaultActivity.this);
+                        objListViewShoutList.setAdapter(objShoutDefaultListAdapter);
+                        objListViewShoutList.onRestoreInstanceState(state);
                     } else if (objJsonArray.length() < 5) {
                         // TODO: 06/10/16 LOADING NEAR BY FRIENDS SHOUT IF FRIENDS SHOUTS ARE NOT AVAILABLE.
                         new LoadNearByShouts().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
@@ -2374,34 +2357,29 @@ public class ShoutDefaultActivity extends BaseActivity implements View.OnClickLi
                     // TELL THE USER THAT HE HAVE LOAD MORE SHOUTS AND NOW HE CAN SCROLL LISTVIEW TO BOTTOM AGAIN TILL NEWLY INSERTED LAST ITEM
                     // IT IS USED FOR CALLING LoadMoreAPI for once.
                     if (new JSONArray(jSONObject.getString("shout")).length() > 0) {
-                        ShoutDefaultActivity.this.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                state = objListViewShoutList.onSaveInstanceState();
-                                try {
-                                    arrShoutDefaultListModel.addAll(objDatabaseHelper.saveShout(new JSONArray(jSONObject.getString("shout")), "0"));
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
+                        state = objListViewShoutList.onSaveInstanceState();
+                        try {
+                            arrShoutDefaultListModel.addAll(objDatabaseHelper.saveShout(new JSONArray(jSONObject.getString("shout")), "0"));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                         /*System.out.println("SHOUT LOCAL DATA ARRAY COUNT : " + arrShoutDefaultListModel.size());
                         objShoutDefaultListAdapter = new ShoutDefaultListAdapter(arrShoutDefaultListModel, ShoutDefaultActivity.this, ShoutDefaultActivity.this);
                         objListViewShoutList.setAdapter(objShoutDefaultListAdapter);
                         objListViewShoutList.onRestoreInstanceState(state);*/
 
-                                state = objListViewShoutList.onSaveInstanceState();
-                                arrShoutDefaultListModel.clear();
-                                if (objSharedPreferences.getString(Constants.USER_SEARCHED_CATEGORY, "").length() > 0) {
-                                    arrShoutDefaultListModel = objDatabaseHelper.getShoutDefaultListModelArray("0", strPreferenceId, true);
-                                } else {
-                                    arrShoutDefaultListModel = objDatabaseHelper.getShoutDefaultListModelArray("0", strPreferenceId, false);
-                                }
-                                objListViewShoutList.setAdapter(new ShoutDefaultListAdapter(arrShoutDefaultListModel, ShoutDefaultActivity.this, ShoutDefaultActivity.this));
-                                if (state != null) {
-                                    objListViewShoutList.onRestoreInstanceState(state);
-                                }
-                                isLoading = true;
-                            }
-                        });
+                        state = objListViewShoutList.onSaveInstanceState();
+                        arrShoutDefaultListModel.clear();
+                        if (objSharedPreferences.getString(Constants.USER_SEARCHED_CATEGORY, "").length() > 0) {
+                            arrShoutDefaultListModel = objDatabaseHelper.getShoutDefaultListModelArray("0", strPreferenceId, true);
+                        } else {
+                            arrShoutDefaultListModel = objDatabaseHelper.getShoutDefaultListModelArray("0", strPreferenceId, false);
+                        }
+                        objListViewShoutList.setAdapter(new ShoutDefaultListAdapter(arrShoutDefaultListModel, ShoutDefaultActivity.this, ShoutDefaultActivity.this));
+                        if (state != null) {
+                            objListViewShoutList.onRestoreInstanceState(state);
+                        }
+                        isLoading = true;
                         showNoDataFoundUI(false);
                     } else {
                         showNoDataFoundUI(true);
@@ -2427,7 +2405,6 @@ public class ShoutDefaultActivity extends BaseActivity implements View.OnClickLi
             } else {
                 linearLayoutNoDataFound.setVisibility(LinearLayout.VISIBLE);
             }
-
             String strNoDataImageUrl = "";
             String strNoDataTextMessage = "";
 

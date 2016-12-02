@@ -773,7 +773,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     } while (objShoutCursor.moveToNext());
                 }
             }
-
+            System.out.println("DEMO AFTER ARRAY SIZE : " + strPreferenceId);
             if (Integer.parseInt(strPreferenceId) == 1 && inSearchMode == false) {
                 System.out.println("BEFORE ARRAY SIZE : " + arrShoutDefaultListModel.size());
                 for (int index = 0; index < arrBlogPositions.size(); index++) {

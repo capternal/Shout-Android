@@ -31,51 +31,59 @@ public class BitmapBorderTransformation implements Transformation {
         int width = source.getWidth();
         int height = source.getHeight();
 
-        Bitmap image = Bitmap.createBitmap(width, height, source.getConfig());
-        Canvas canvas = new Canvas(image);
-        canvas.drawARGB(0, 0, 0, 0);
-
-        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        Rect rect = new Rect(0, 0, width, height);
-
-
-        if (this.mCornerRadius == 0) {
-            canvas.drawRect(rect, paint);
-        } else {
-            canvas.drawRoundRect(new RectF(rect),
-                    this.mCornerRadius, this.mCornerRadius, paint);
-        }
-
-        paint.setXfermode(new PorterDuffXfermode((PorterDuff.Mode.SRC_IN)));
-        canvas.drawBitmap(source, rect, rect, paint);
-
-        Bitmap output;
-
-        if (this.mBorderSize == 0) {
-            output = image;
-        } else {
-            width = width + this.mBorderSize * 2;
-            height = height + this.mBorderSize * 2;
-
-            output = Bitmap.createBitmap(width, height, source.getConfig());
-            canvas.setBitmap(output);
+        try {
+            Bitmap image = Bitmap.createBitmap(width, height, source.getConfig());
+            Canvas canvas = new Canvas(image);
             canvas.drawARGB(0, 0, 0, 0);
 
-            rect = new Rect(0, 0, width, height);
+            Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            Rect rect = new Rect(0, 0, width, height);
 
-            paint.setXfermode(null);
-            paint.setColor(this.mColor);
-            paint.setStyle(Paint.Style.FILL);
 
-            canvas.drawRoundRect(new RectF(rect), this.mCornerRadius, this.mCornerRadius, paint);
+            if (this.mCornerRadius == 0) {
+                canvas.drawRect(rect, paint);
+            } else {
+                canvas.drawRoundRect(new RectF(rect),
+                        this.mCornerRadius, this.mCornerRadius, paint);
+            }
 
-            canvas.drawBitmap(image, this.mBorderSize, this.mBorderSize, null);
+            paint.setXfermode(new PorterDuffXfermode((PorterDuff.Mode.SRC_IN)));
+            canvas.drawBitmap(source, rect, rect, paint);
+
+            Bitmap output;
+
+            if (this.mBorderSize == 0) {
+                output = image;
+            } else {
+                width = width + this.mBorderSize * 2;
+                height = height + this.mBorderSize * 2;
+
+                output = Bitmap.createBitmap(width, height, source.getConfig());
+                canvas.setBitmap(output);
+                canvas.drawARGB(0, 0, 0, 0);
+
+                rect = new Rect(0, 0, width, height);
+
+                paint.setXfermode(null);
+                paint.setColor(this.mColor);
+                paint.setStyle(Paint.Style.FILL);
+
+                canvas.drawRoundRect(new RectF(rect), this.mCornerRadius, this.mCornerRadius, paint);
+
+                canvas.drawBitmap(image, this.mBorderSize, this.mBorderSize, null);
+            }
+
+            if (source != output) {
+                source.recycle();
+            }
+            return output;
+        } catch (NullPointerException ne) {
+            ne.printStackTrace();
+            return source;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        if (source != output) {
-            source.recycle();
-        }
-        return output;
+        return source;
     }
 
     @Override
