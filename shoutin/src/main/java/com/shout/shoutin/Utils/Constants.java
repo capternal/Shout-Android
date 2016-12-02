@@ -227,6 +227,7 @@ public class Constants {
     public static final String COMMENT = "comment";
     public static int MARSHMALLOW_REQUEST_PERMISSION_CODE = 20;
     public static String BLOG_URL = HTTP_URL + "/users/blog/";
+    public static final String DEFAULT_NO_DATA_FOUND_MESSAGE = "No Data Found";
 
     public static boolean isEmailValid(String email) {
         return !TextUtils.isEmpty(email) && Patterns.EMAIL_ADDRESS.matcher(email).matches();

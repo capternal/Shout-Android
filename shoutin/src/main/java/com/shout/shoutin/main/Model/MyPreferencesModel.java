@@ -11,14 +11,35 @@ public class MyPreferencesModel {
     private String status;
     private boolean IsCheckBoxChecked;
     private String hideCheckBox;
+    private String image;
+    private String message;
 
-    public MyPreferencesModel(String id, String preference_id, String title, String status, boolean isCheckBoxChecked, String hideCheckBox) {
+
+    public MyPreferencesModel(String id, String preference_id, String title, String status, boolean isCheckBoxChecked, String hideCheckBox, String image, String message) {
         this.id = id;
         this.preference_id = preference_id;
         this.title = title;
         this.status = status;
         IsCheckBoxChecked = isCheckBoxChecked;
         this.hideCheckBox = hideCheckBox;
+        this.image = image;
+        this.message = message;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     public String getId() {

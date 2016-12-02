@@ -47,7 +47,7 @@ public class PreferencesActivity extends Activity implements ConnectivityBroadca
         // CALLES CONNETIVITY CHECK LISTENER
         new AppController().setConnectivityListener(this);
         initializeView();
-        
+
 
         try {
             String tag_json_obj = "json_obj_req";
@@ -78,7 +78,9 @@ public class PreferencesActivity extends Activity implements ConnectivityBroadca
                                             objJsonArray.getJSONObject(index).getString("title"),
                                             objJsonArray.getJSONObject(index).getString("status"),
                                             true,
-                                            objJsonArray.getJSONObject(index).getString("is_checked"));
+                                            objJsonArray.getJSONObject(index).getString("is_checked"),
+                                            Constants.HTTP_URL + objJsonArray.getJSONObject(index).getString("image"),
+                                            objJsonArray.getJSONObject(index).getString("message"));
                                     arrMyPreferencesModel.add(objMyPreferencesModel);
                                 } else {
                                     MyPreferencesModel objMyPreferencesModel = new MyPreferencesModel(
@@ -87,7 +89,9 @@ public class PreferencesActivity extends Activity implements ConnectivityBroadca
                                             objJsonArray.getJSONObject(index).getString("title"),
                                             objJsonArray.getJSONObject(index).getString("status"),
                                             false,
-                                            objJsonArray.getJSONObject(index).getString("is_checked"));
+                                            objJsonArray.getJSONObject(index).getString("is_checked"),
+                                            Constants.HTTP_URL + objJsonArray.getJSONObject(index).getString("image"),
+                                            objJsonArray.getJSONObject(index).getString("message"));
                                     arrMyPreferencesModel.add(objMyPreferencesModel);
                                 }
                             }
@@ -130,7 +134,7 @@ public class PreferencesActivity extends Activity implements ConnectivityBroadca
         super.onResume();
         // CALLES CONNETIVITY CHECK LISTENER
         new AppController().setConnectivityListener(this);
-        
+
     }
 
     @Override

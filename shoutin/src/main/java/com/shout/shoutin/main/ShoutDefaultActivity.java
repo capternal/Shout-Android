@@ -54,11 +54,6 @@ import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
@@ -96,6 +91,7 @@ import com.shout.shoutin.main.Model.ShoutDefaultListModel;
 import com.shout.shoutin.others.TouchableMapFragment;
 import com.shout.shoutin.others.TouchableWrapper;
 import com.shout.shoutin.service.ShoutBoardBackgroundService;
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -104,10 +100,8 @@ import org.json.JSONObject;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 /**
  * Created by CapternalSystems on 7/5/2016.
@@ -340,54 +334,9 @@ public class ShoutDefaultActivity extends BaseActivity implements View.OnClickLi
         try {
             initViewPagerComponents();
             String tag_json_obj = "json_obj_req";
-            JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST, Constants.MY_PREFRENCES_API, new JSONObject().put("user_id", objSharedPreferences.getString(Constants.USER_ID, "")), new Response.Listener<JSONObject>() {
-                @Override
-                public void onResponse(JSONObject response) {
-                    System.out.println("API RESPONSE : " + response.toString());
-                    try {
-                        JSONObject objJsonObject = new JSONObject(response.toString());
 
-                        if (objJsonObject.getString("result").equals("true")) {
-                            JSONArray objJsonArray = new JSONArray(objJsonObject.getString("preferences"));
 
-                            objSharedPreferences.edit().putString(Constants.SHOUT_PREFERENCES, objJsonArray.toString()).commit();
-
-                            /*for (int index = 0; index < objJsonArray.length(); index++) {
-                                if (objJsonArray.getJSONObject(index).getString("status").equals("A")) {
-                                    MyPreferencesModel objMyPreferencesModel = new MyPreferencesModel(
-                                            objJsonArray.getJSONObject(index).getString("id"),
-                                            objJsonArray.getJSONObject(index).getString("preference_id"),
-                                            objJsonArray.getJSONObject(index).getString("title"),
-                                            objJsonArray.getJSONObject(index).getString("status"),
-                                            true,
-                                            objJsonArray.getJSONObject(index).getString("is_checked"));
-                                    arrMyPreferencesModel.add(objMyPreferencesModel);
-                                }
-                            }*/
-                            initViewPagerComponents();
-                        }
-                    } catch (NullPointerException ne) {
-                        ne.printStackTrace();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    System.out.println("ERROR : " + error.toString());
-                }
-            }) {
-                @Override
-                public Map<String, String> getHeaders() throws AuthFailureError {
-                    HashMap<String, String> headers = new HashMap<String, String>();
-                    headers.put("Content-Type", "application/json");
-                    headers.put("Accept", "application/json");
-                    return headers;
-                }
-            };
-            // Adding request to request queue
-            AppController.getInstance().addToRequestQueue(jsonObjReq, tag_json_obj);
+            new CallWebService(Constants.MY_PREFRENCES_API, new JSONObject().put("user_id", objSharedPreferences.getString(Constants.USER_ID, "")), this, this, false).execute();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -608,7 +557,9 @@ public class ShoutDefaultActivity extends BaseActivity implements View.OnClickLi
                                 objJsonArray.getJSONObject(index).getString("title"),
                                 objJsonArray.getJSONObject(index).getString("status"),
                                 true,
-                                objJsonArray.getJSONObject(index).getString("is_checked"));
+                                objJsonArray.getJSONObject(index).getString("is_checked"),
+                                Constants.HTTP_URL + objJsonArray.getJSONObject(index).getString("image"),
+                                objJsonArray.getJSONObject(index).getString("message"));
                         arrMyPreferencesModel.add(objMyPreferencesModel);
                     }
                 }
@@ -630,10 +581,12 @@ public class ShoutDefaultActivity extends BaseActivity implements View.OnClickLi
 
             @Override
             public void onPageSelected(final int position) {
+
+                showNoDataFoundUI(false);
+
                 // SET API SCROLL COUNT TO 0 (ZERO)
                 setAPIScrollCount(0);
 
-                System.out.println("SURESH CHANDGUDE PRINT PAGE POSITION : " + position);
                 // SET IS LOADING TO TRUE FOR GETTING LAST ITEM DETECT
                 isLoading = true;
                 // USED FOR DISPLAYING DEFAULT API LOADER ON CENTER OF SCREEN. LOADER IS VISIBLE WHEN IT IS TRUE.
@@ -1166,6 +1119,7 @@ public class ShoutDefaultActivity extends BaseActivity implements View.OnClickLi
         objShoutDefaultSwipableLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
                                                                @Override
                                                                public void onRefresh() {
+
                                                                    if (strPreferenceId.equals("1")) {
                                                                        objDatabaseHelper.deleteUnFriendShouts();
                                                                    } else {
@@ -1186,7 +1140,11 @@ public class ShoutDefaultActivity extends BaseActivity implements View.OnClickLi
                                                                    objShoutDefaultListAdapter.notifyDataSetChanged();
                                                                    objListViewShoutList.onRestoreInstanceState(state);
                                                                    setAPIScrollCount(0);
-                                                                   new StoreShoutDataForFirstTime("1").execute();
+                                                                   if (strPreferenceId.equals("4")) {
+                                                                       new LoadNearByShouts().execute();
+                                                                   } else {
+                                                                       new StoreShoutDataForFirstTime("1").execute();
+                                                                   }
                                                                    objShoutDefaultSwipableLayout.setRefreshing(true);
                                                                }
                                                            }
@@ -1738,6 +1696,33 @@ public class ShoutDefaultActivity extends BaseActivity implements View.OnClickLi
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        } else if (Constants.MY_PREFRENCES_API.equals(strUrl)) {
+            System.out.println("API RESPONSE : " + strResult.toString());
+            try {
+                JSONObject objJsonObject = new JSONObject(strResult.toString());
+
+                if (objJsonObject.getString("result").equals("true")) {
+                    JSONArray objJsonArray = new JSONArray(objJsonObject.getString("preferences"));
+                    objSharedPreferences.edit().putString(Constants.SHOUT_PREFERENCES, objJsonArray.toString()).commit();
+                            /*for (int index = 0; index < objJsonArray.length(); index++) {
+                                if (objJsonArray.getJSONObject(index).getString("status").equals("A")) {
+                                    MyPreferencesModel objMyPreferencesModel = new MyPreferencesModel(
+                                            objJsonArray.getJSONObject(index).getString("id"),
+                                            objJsonArray.getJSONObject(index).getString("preference_id"),
+                                            objJsonArray.getJSONObject(index).getString("title"),
+                                            objJsonArray.getJSONObject(index).getString("status"),
+                                            true,
+                                            objJsonArray.getJSONObject(index).getString("is_checked"));
+                                    arrMyPreferencesModel.add(objMyPreferencesModel);
+                                }
+                            }*/
+                    initViewPagerComponents();
+                }
+            } catch (NullPointerException ne) {
+                ne.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -1995,7 +1980,7 @@ public class ShoutDefaultActivity extends BaseActivity implements View.OnClickLi
                 objCreateShout.startAnimation(fab_open);
                 objLinearBottomLoad.setVisibility(LinearLayout.GONE);
                 Constants.hideToBottom(objLinearBottomLoad);
-                JSONObject jSONObject = new JSONObject(s);
+                final JSONObject jSONObject = new JSONObject(s);
                 if (jSONObject.getString("result").equals("true")) {
 
                     // UPDATE API SCROLL COUNT
@@ -2006,46 +1991,61 @@ public class ShoutDefaultActivity extends BaseActivity implements View.OnClickLi
                     // IT IS USED FOR CALLING LoadMoreAPI for once.
 
                     if (new JSONArray(jSONObject.getString("shout")).length() > 0) {
-                        arrShoutDefaultListModel.addAll(objDatabaseHelper.saveShout(new JSONArray(jSONObject.getString("shout")), "0"));
-                        System.out.println("SHOUT LOCAL DATA ARRAY COUNT : " + arrShoutDefaultListModel.size());
+                        ShoutDefaultActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    arrShoutDefaultListModel.addAll(objDatabaseHelper.saveShout(new JSONArray(jSONObject.getString("shout")), "0"));
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                                System.out.println("SHOUT LOCAL DATA ARRAY COUNT : " + arrShoutDefaultListModel.size());
 
-                        state = objListViewShoutList.onSaveInstanceState();
-                        arrShoutDefaultListModel.clear();
+                                state = objListViewShoutList.onSaveInstanceState();
+                                arrShoutDefaultListModel.clear();
 
-                        if (objSharedPreferences.getString(Constants.USER_SEARCHED_CATEGORY, "").length() > 0) {
-                            arrShoutDefaultListModel = objDatabaseHelper.getShoutDefaultListModelArray("0", strPreferenceId, true);
-                        } else {
-                            arrShoutDefaultListModel = objDatabaseHelper.getShoutDefaultListModelArray("0", strPreferenceId, false);
-                        }
-                        objListViewShoutList.setAdapter(new ShoutDefaultListAdapter(arrShoutDefaultListModel, ShoutDefaultActivity.this, ShoutDefaultActivity.this));
-                        if (state != null) {
-                            objListViewShoutList.onRestoreInstanceState(state);
-                        }
-                        objShoutDefaultListAdapter.notifyDataSetChanged();
+                                if (objSharedPreferences.getString(Constants.USER_SEARCHED_CATEGORY, "").length() > 0) {
+                                    arrShoutDefaultListModel = objDatabaseHelper.getShoutDefaultListModelArray("0", strPreferenceId, true);
+                                } else {
+                                    arrShoutDefaultListModel = objDatabaseHelper.getShoutDefaultListModelArray("0", strPreferenceId, false);
+                                }
+                                objListViewShoutList.setAdapter(new ShoutDefaultListAdapter(arrShoutDefaultListModel, ShoutDefaultActivity.this, ShoutDefaultActivity.this));
+                                if (state != null) {
+                                    objListViewShoutList.onRestoreInstanceState(state);
+                                }
+                                objShoutDefaultListAdapter.notifyDataSetChanged();
+                            }
+                        });
                         isLoading = true;
+                        showNoDataFoundUI(false);
+
+                        // TODO: 30/09/16 SAVING NOTIFICATION COUNT INTO PROFILE SHAREDPREFERENCES
+                        if (jSONObject.getString("notification_count").equals("")) {
+                            SharedPreferences.Editor editor = objSharedPreferences.edit();
+                            editor.putString(Constants.USER_NOTIFICATION_COUNT, "0");
+                            editor.putString(Constants.USER_MESSAGE_COUNT, "0");
+                            editor.commit();
+                        } else {
+                            SharedPreferences.Editor editor = objSharedPreferences.edit();
+                            editor.putString(Constants.USER_NOTIFICATION_COUNT, jSONObject.getString("notification_count"));
+                            editor.putString(Constants.USER_MESSAGE_COUNT, jSONObject.getString("message_count"));
+                            editor.commit();
+                        }
+                        updateNotificationCount(jSONObject.getString("notification_count"));
+                        updateMessageCount(jSONObject.getString("message_count"));
+
                     } else {
                         // IF CATEGORY IS EMPTY THEN AND TEHN ONLY CALL NEARBYAPI ELSE DO NOTHING
                         System.out.println("CATEGORY FREZ ON LOAD MORE : " + objSharedPreferences.getString(Constants.USER_SEARCHED_CATEGORY, ""));
                         if (objSharedPreferences.getString(Constants.USER_SEARCHED_CATEGORY, "").isEmpty() || objSharedPreferences.getString(Constants.USER_SEARCHED_CATEGORY, "").equals("")) {
-                            if (!strPreferenceId.equals("2")) {
+                            if (!strPreferenceId.equals("2") && !strPreferenceId.equals("3")) {
                                 new LoadNearByShouts().execute();
+                            } else {
+                                showNoDataFoundUI(true);
                             }
                         }
                     }
-                    // TODO: 30/09/16 SAVING NOTIFICATION COUNT INTO PROFILE SHAREDPREFERENCES
-                    if (jSONObject.getString("notification_count").equals("")) {
-                        SharedPreferences.Editor editor = objSharedPreferences.edit();
-                        editor.putString(Constants.USER_NOTIFICATION_COUNT, "0");
-                        editor.putString(Constants.USER_MESSAGE_COUNT, "0");
-                        editor.commit();
-                    } else {
-                        SharedPreferences.Editor editor = objSharedPreferences.edit();
-                        editor.putString(Constants.USER_NOTIFICATION_COUNT, jSONObject.getString("notification_count"));
-                        editor.putString(Constants.USER_MESSAGE_COUNT, jSONObject.getString("message_count"));
-                        editor.commit();
-                    }
-                    updateNotificationCount(jSONObject.getString("notification_count"));
-                    updateMessageCount(jSONObject.getString("message_count"));
+
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -2176,42 +2176,47 @@ public class ShoutDefaultActivity extends BaseActivity implements View.OnClickLi
                     setAPIScrollCount(Integer.parseInt(objSharedPreferences.getString(Constants.SHOUT_BOARD_LIST_API_SCROLL_COUNT, "")) + 1);
 
                     isFirstTime = false;
-                    JSONArray objJsonArray = new JSONArray(jSONObject.getString("shout"));
+                    final JSONArray objJsonArray = new JSONArray(jSONObject.getString("shout"));
 
-                    // TODO: 30/09/16 SAVING NOTIFICATION COUNT INTO PROFILE SHAREDPREFERENCES
-                    if (jSONObject.getString("notification_count").equals("") && jSONObject.getString("message_count").equals("")) {
-                        SharedPreferences.Editor editor = objSharedPreferences.edit();
-                        editor.putString(Constants.USER_NOTIFICATION_COUNT, "0");
-                        editor.putString(Constants.USER_MESSAGE_COUNT, "0");
-                        editor.commit();
-                    } else {
-                        SharedPreferences.Editor editor = objSharedPreferences.edit();
-                        editor.putString(Constants.USER_NOTIFICATION_COUNT, jSONObject.getString("notification_count"));
-                        editor.putString(Constants.USER_MESSAGE_COUNT, jSONObject.getString("message_count"));
-                        editor.commit();
-                    }
-                    updateNotificationCount(jSONObject.getString("notification_count"));
-                    updateMessageCount(jSONObject.getString("message_count"));
-
-                    System.out.println("SHOUT JSON ARRAY LENGTH : " + objJsonArray.toString().length());
-                    System.out.println("TEST : " + key);
-                    state = objListViewShoutList.onSaveInstanceState();
                     if (objJsonArray.length() > 0) {
                         if (key.equals("0")) {
                             objDatabaseHelper.deleteShoutEntries();
                         }
-                        objDatabaseHelper.saveShout(objJsonArray, "0");
-                        if (objSharedPreferences.getString(Constants.USER_SEARCHED_CATEGORY, "").length() > 0) {
-                            arrShoutDefaultListModel = objDatabaseHelper.getShoutDefaultListModelArray("0", strPreferenceId, true);
+
+                        // TODO: 30/09/16 SAVING NOTIFICATION COUNT INTO PROFILE SHAREDPREFERENCES
+                        if (jSONObject.getString("notification_count").equals("") && jSONObject.getString("message_count").equals("")) {
+                            SharedPreferences.Editor editor = objSharedPreferences.edit();
+                            editor.putString(Constants.USER_NOTIFICATION_COUNT, "0");
+                            editor.putString(Constants.USER_MESSAGE_COUNT, "0");
+                            editor.commit();
                         } else {
-                            arrShoutDefaultListModel = objDatabaseHelper.getShoutDefaultListModelArray("0", strPreferenceId, false);
+                            SharedPreferences.Editor editor = objSharedPreferences.edit();
+                            editor.putString(Constants.USER_NOTIFICATION_COUNT, jSONObject.getString("notification_count"));
+                            editor.putString(Constants.USER_MESSAGE_COUNT, jSONObject.getString("message_count"));
+                            editor.commit();
                         }
+                        updateNotificationCount(jSONObject.getString("notification_count"));
+                        updateMessageCount(jSONObject.getString("message_count"));
 
-                        System.out.println("PRASANNA PRINT : MODEL ARRAY : " + arrShoutDefaultListModel.size());
-                        objShoutDefaultListAdapter = new ShoutDefaultListAdapter(arrShoutDefaultListModel, ShoutDefaultActivity.this, ShoutDefaultActivity.this);
+                        System.out.println("SHOUT JSON ARRAY LENGTH : " + objJsonArray.toString().length());
+                        System.out.println("TEST : " + key);
+                        state = objListViewShoutList.onSaveInstanceState();
 
-                        objListViewShoutList.setAdapter(objShoutDefaultListAdapter);
-                        objListViewShoutList.onRestoreInstanceState(state);
+                        ShoutDefaultActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                objDatabaseHelper.saveShout(objJsonArray, "0");
+                                if (objSharedPreferences.getString(Constants.USER_SEARCHED_CATEGORY, "").length() > 0) {
+                                    arrShoutDefaultListModel = objDatabaseHelper.getShoutDefaultListModelArray("0", strPreferenceId, true);
+                                } else {
+                                    arrShoutDefaultListModel = objDatabaseHelper.getShoutDefaultListModelArray("0", strPreferenceId, false);
+                                }
+                                System.out.println("PRASANNA PRINT : MODEL ARRAY : " + arrShoutDefaultListModel.size());
+                                objShoutDefaultListAdapter = new ShoutDefaultListAdapter(arrShoutDefaultListModel, ShoutDefaultActivity.this, ShoutDefaultActivity.this);
+                                objListViewShoutList.setAdapter(objShoutDefaultListAdapter);
+                                objListViewShoutList.onRestoreInstanceState(state);
+                            }
+                        });
                     } else if (objJsonArray.length() < 5) {
                         // TODO: 06/10/16 LOADING NEAR BY FRIENDS SHOUT IF FRIENDS SHOUTS ARE NOT AVAILABLE.
                         new LoadNearByShouts().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
@@ -2232,7 +2237,6 @@ public class ShoutDefaultActivity extends BaseActivity implements View.OnClickLi
         } else {
             objSharedPreferences.edit().putString(Constants.SHOUT_BOARD_LIST_API_SCROLL_COUNT, String.valueOf(intCount)).commit();
         }
-
     }
 
     public class ShoutUpdateBroadcastReceiver extends BroadcastReceiver {
@@ -2349,15 +2353,18 @@ public class ShoutDefaultActivity extends BaseActivity implements View.OnClickLi
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
             try {
+
+
 //                strPreferenceId = "0";
                 if (objProgressDialog.isShowing()) {
                     objProgressDialog.dismiss();
                 }
+                objShoutDefaultSwipableLayout.setRefreshing(false);
                 Animation fab_open = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_open);
                 objCreateShout.startAnimation(fab_open);
                 objLinearBottomLoad.setVisibility(LinearLayout.GONE);
                 Constants.hideToBottom(objLinearBottomLoad);
-                JSONObject jSONObject = new JSONObject(s);
+                final JSONObject jSONObject = new JSONObject(s);
                 if (jSONObject.getString("result").equals("true")) {
 
                     // UPDATE API SCROLL COUNT
@@ -2367,25 +2374,37 @@ public class ShoutDefaultActivity extends BaseActivity implements View.OnClickLi
                     // TELL THE USER THAT HE HAVE LOAD MORE SHOUTS AND NOW HE CAN SCROLL LISTVIEW TO BOTTOM AGAIN TILL NEWLY INSERTED LAST ITEM
                     // IT IS USED FOR CALLING LoadMoreAPI for once.
                     if (new JSONArray(jSONObject.getString("shout")).length() > 0) {
-                        state = objListViewShoutList.onSaveInstanceState();
-                        arrShoutDefaultListModel.addAll(objDatabaseHelper.saveShout(new JSONArray(jSONObject.getString("shout")), "0"));
+                        ShoutDefaultActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                state = objListViewShoutList.onSaveInstanceState();
+                                try {
+                                    arrShoutDefaultListModel.addAll(objDatabaseHelper.saveShout(new JSONArray(jSONObject.getString("shout")), "0"));
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
                         /*System.out.println("SHOUT LOCAL DATA ARRAY COUNT : " + arrShoutDefaultListModel.size());
                         objShoutDefaultListAdapter = new ShoutDefaultListAdapter(arrShoutDefaultListModel, ShoutDefaultActivity.this, ShoutDefaultActivity.this);
                         objListViewShoutList.setAdapter(objShoutDefaultListAdapter);
                         objListViewShoutList.onRestoreInstanceState(state);*/
 
-                        state = objListViewShoutList.onSaveInstanceState();
-                        arrShoutDefaultListModel.clear();
-                        if (objSharedPreferences.getString(Constants.USER_SEARCHED_CATEGORY, "").length() > 0) {
-                            arrShoutDefaultListModel = objDatabaseHelper.getShoutDefaultListModelArray("0", strPreferenceId, true);
-                        } else {
-                            arrShoutDefaultListModel = objDatabaseHelper.getShoutDefaultListModelArray("0", strPreferenceId, false);
-                        }
-                        objListViewShoutList.setAdapter(new ShoutDefaultListAdapter(arrShoutDefaultListModel, ShoutDefaultActivity.this, ShoutDefaultActivity.this));
-                        if (state != null) {
-                            objListViewShoutList.onRestoreInstanceState(state);
-                        }
-                        isLoading = true;
+                                state = objListViewShoutList.onSaveInstanceState();
+                                arrShoutDefaultListModel.clear();
+                                if (objSharedPreferences.getString(Constants.USER_SEARCHED_CATEGORY, "").length() > 0) {
+                                    arrShoutDefaultListModel = objDatabaseHelper.getShoutDefaultListModelArray("0", strPreferenceId, true);
+                                } else {
+                                    arrShoutDefaultListModel = objDatabaseHelper.getShoutDefaultListModelArray("0", strPreferenceId, false);
+                                }
+                                objListViewShoutList.setAdapter(new ShoutDefaultListAdapter(arrShoutDefaultListModel, ShoutDefaultActivity.this, ShoutDefaultActivity.this));
+                                if (state != null) {
+                                    objListViewShoutList.onRestoreInstanceState(state);
+                                }
+                                isLoading = true;
+                            }
+                        });
+                        showNoDataFoundUI(false);
+                    } else {
+                        showNoDataFoundUI(true);
                     }
                     /*else {
                         if (objSharedPreferences.getString(Constants.USER_SEARCHED_CATEGORY, "").isEmpty() || objSharedPreferences.getString(Constants.USER_SEARCHED_CATEGORY, "").equals("")) {
@@ -2398,6 +2417,44 @@ public class ShoutDefaultActivity extends BaseActivity implements View.OnClickLi
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    private void showNoDataFoundUI(boolean visibility) {
+        if (visibility) {
+            if (arrShoutDefaultListModel.size() > 0) {
+                linearLayoutNoDataFound.setVisibility(LinearLayout.GONE);
+            } else {
+                linearLayoutNoDataFound.setVisibility(LinearLayout.VISIBLE);
+            }
+
+            String strNoDataImageUrl = "";
+            String strNoDataTextMessage = "";
+
+            for (int index = 0; index < arrMyPreferencesModel.size(); index++) {
+                if (strPreferenceId.equals(arrMyPreferencesModel.get(index).getPreference_id())) {
+                    System.out.println(" PRASAD PRINT :::: " + arrMyPreferencesModel.get(index).getImage());
+                    if (arrMyPreferencesModel.get(index).getImage().equals(Constants.HTTP_URL + "null")) {
+                        strNoDataImageUrl = "";
+                    } else {
+                        strNoDataImageUrl = arrMyPreferencesModel.get(index).getImage();
+                    }
+
+                    if (arrMyPreferencesModel.get(index).getMessage().equals("null")) {
+                        strNoDataTextMessage = Constants.DEFAULT_NO_DATA_FOUND_MESSAGE;
+                    } else {
+                        strNoDataTextMessage = arrMyPreferencesModel.get(index).getMessage();
+                    }
+                }
+            }
+            textViewNoDataFound.setText(strNoDataTextMessage);
+            if (strNoDataImageUrl.equals("")) {
+                Picasso.with(ShoutDefaultActivity.this).load(R.drawable.shout_app_logo).into(imageViewNoDataFound);
+            } else {
+                Picasso.with(ShoutDefaultActivity.this).load(strNoDataImageUrl).into(imageViewNoDataFound);
+            }
+        } else {
+            linearLayoutNoDataFound.setVisibility(LinearLayout.GONE);
         }
     }
 
