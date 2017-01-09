@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/expandable_listview_contactlist_header"
+        android:layout_width="match_parent"
+        android:layout_height="25dp"
+        android:layout_marginBottom="25dp"
+        android:layout_marginTop="25dp"
+        android:layout_toLeftOf="@+id/btn_select_deselect"
+        android:gravity="center_vertical"
+        android:text="gjhhjjhh"
+        android:textColor="#A7A8A7"
+        android:textSize="11sp" />
+
+    <Button
+        android:id="@+id/btn_select_deselect"
+        android:layout_width="wrap_content"
+        android:layout_height="25dp"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="25dp"
+        android:layout_marginTop="25dp"
+        android:background="@drawable/deselect_date_background"
+        android:fontFamily="AvenirNext-Medium"
+        android:text="Select All"
+        android:textAllCaps="false"
+        android:textColor="@color/text_color_date_deselect"
+        android:textSize="12sp"
+        android:visibility="gone" />
+</RelativeLayout>

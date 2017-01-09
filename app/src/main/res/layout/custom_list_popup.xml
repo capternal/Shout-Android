@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#99000000"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="10dp">
+
+        <RelativeLayout
+            android:id="@+id/relative_search_popup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/rounded_list_popup_white">
+
+            <ImageView
+                android:id="@+id/imageViewSearch"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="10dp"
+                android:padding="2dp"
+                android:src="@drawable/search" />
+
+            <EditText
+                android:id="@+id/editTextSearch"
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:layout_toRightOf="@+id/imageViewSearch"
+                android:background="@color/transparent"
+                android:hint="Search"
+                android:imeActionLabel="Done"
+                android:imeOptions="actionDone"
+                android:inputType="text"
+                android:paddingLeft="10dp"
+                android:singleLine="true"
+                android:textSize="14sp" />
+
+
+        </RelativeLayout>
+
+
+        <ListView
+            android:id="@+id/listViewCustomPopup"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@+id/buttonDismissListPopup"
+            android:layout_below="@+id/relative_search_popup"
+            android:layout_marginBottom="10dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/rounded_list_popup_white"
+            android:divider="#dcdbdb"
+            android:dividerHeight="1dp"
+            android:padding="7dp"></ListView>
+
+        <TextView
+            android:id="@+id/textViewNoMatchesFound"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/relative_search_popup"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="50dp"
+            android:gravity="center"
+            android:text="No matches for "
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/buttonDismissListPopup"
+            android:layout_width="match_parent"
+            android:layout_height="35dp"
+            android:layout_alignParentBottom="true"
+            android:background="@drawable/rounded_list_popup_white"
+            android:text="Cancel"
+            android:textAllCaps="false"
+            android:textColor="@color/red_background_color"
+            android:textSize="14sp" />
+
+
+    </RelativeLayout>
+
+
+</LinearLayout>
